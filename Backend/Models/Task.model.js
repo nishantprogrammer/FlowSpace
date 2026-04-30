@@ -1,0 +1,23 @@
+import mongoose from "mongoose";
+
+const taskSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true },
+    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    status: { type: String, enum: ['todo', 'in-progress', 'done', 'overdue'], default: 'todo' },
+    priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+    dueDate: { type: Date }
+  },
+  { timestamps: true }
+);
+
+taskSchema.pre('save', function () {
+  if (this.dueDate && this.dueDate < new Date() && this.status !== 'done') {
+    this.status = 'overdue';
+  }
+});
+
+export default mongoose.model("Task", taskSchema);
